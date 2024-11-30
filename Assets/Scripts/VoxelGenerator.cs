@@ -6,34 +6,48 @@ public class VoxelGenerator : MonoBehaviour
     public int chunkWidth = 16;  // Number of blocks along the X axis
     public int chunkLength = 16; // Number of blocks along the Z axis
     public int chunkHeight = 8;  // Maximum height of the terrain
-    public float noiseScale = 10f; // Scale for Perlin noise
 
     [Header("Block Settings")]
-    public GameObject blockPrefab; // Assign the block prefab in the Inspector
+    public GameObject[] blockPrefabs; // Array of block prefabs for different layers
 
     void Start()
     {
-        GenerateTerrain();
+        GenerateLayeredTerrain();
     }
 
-    void GenerateTerrain()
+    void GenerateLayeredTerrain()
     {
         for (int x = 0; x < chunkWidth; x++)
         {
             for (int z = 0; z < chunkLength; z++)
             {
-                // Use Perlin noise to generate a height map
-                float yHeight = Mathf.PerlinNoise(x / noiseScale, z / noiseScale) * chunkHeight;
-
-                // Round to nearest integer for discrete block levels
-                int height = Mathf.RoundToInt(yHeight);
-
-                for (int y = 0; y < height; y++)
+                for (int y = 0; y < chunkHeight; y++)
                 {
-                    Vector3 position = new Vector3(x, y, z);
-                    Instantiate(blockPrefab, position, Quaternion.identity, transform);
+                    GameObject blockToInstantiate = GetBlockForLayer(chunkHeight - 1 - y);
+                    if (blockToInstantiate != null)
+                    {
+                        Vector3 position = new Vector3(x, y, z);
+                        Instantiate(blockToInstantiate, position, Quaternion.identity, transform);
+                    }
                 }
             }
+        }
+    }
+
+    GameObject GetBlockForLayer(int layer)
+    {
+        // Determine the block type for each layer
+        if (layer == 0)
+        {
+            return blockPrefabs.Length > 0 ? blockPrefabs[0] : null; // Topmost layer
+        }
+        else if (layer <= 3)
+        {
+            return blockPrefabs.Length > 1 ? blockPrefabs[1] : null; // Next three layers
+        }
+        else
+        {
+            return blockPrefabs.Length > 2 ? blockPrefabs[2] : null; // Remaining layers
         }
     }
 }

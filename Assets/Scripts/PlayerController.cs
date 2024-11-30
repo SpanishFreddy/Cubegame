@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI; // Required for UI elements
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,8 +14,13 @@ public class PlayerController : MonoBehaviour
     public Transform cameraTransform;
 
     [Header("Block Interaction")]
-    public GameObject blockPrefab; // Prefab of the block to place
+    public GameObject[] blockPrefabs; // Array of block prefabs
+    public Sprite[] blockImages; // Array of block sprites for UI
     public float interactionRange = 5f; // Range for placing/removing blocks
+    private int selectedBlockIndex = 0; // Tracks the currently selected block
+
+    [Header("UI Elements")]
+    public Image blockSelectionImage; // Reference to the UI Image for block selection
 
     [Header("Sound Effects")]
     public AudioClip walkRunSound; // Combined walk and run sound
@@ -33,9 +39,12 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = false;
     private bool isWalking = false;
 
+    public PauseMenu pauseMenu;
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         characterController = GetComponent<CharacterController>();
 
         // Initialize the AudioSources
@@ -52,16 +61,30 @@ public class PlayerController : MonoBehaviour
         musicSource.Play(); // Start playing the background music
 
         currentSpeed = walkSpeed; // Start at normal walking speed
+
+        // Set initial block selection image
+        UpdateBlockSelectionUI();
     }
 
     void Update()
     {
+        if (!pauseMenu.isPaused) // Only lock the cursor if the game is not paused
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None; // Unlock the cursor when paused
+            Cursor.visible = true; // Show the cursor when paused
+        }
         isGrounded = characterController.isGrounded;
 
         HandleMouseLook();
         HandleMovement();
         HandleJumping();
         HandleSprinting();
+        HandleBlockSelection(); // Handle block selection
         HandleBlockInteraction(); // Block interaction logic
     }
 
@@ -139,30 +162,15 @@ public class PlayerController : MonoBehaviour
 
     void HandleJumping()
     {
-        // Check if the player is on the ground
         if (isGrounded && Input.GetButtonDown("Jump"))
         {
-            // Check if there's enough space above the player to jump
             RaycastHit hit;
-
-            // Raycast upwards to check if there is a block above the player
             if (!Physics.Raycast(transform.position, Vector3.up, out hit, 1f))
             {
-                // Check if the player is close to a block ahead while walking/running
-                Vector3 forwardRayStart = transform.position + transform.forward * 0.5f;
-                RaycastHit forwardHit;
-
-                // Check for an obstacle ahead of the player
-                if (!Physics.Raycast(forwardRayStart, Vector3.up, out forwardHit, 1f))
-                {
-                    // Apply jump force if no block above and no block ahead
-                    velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
-                }
+                velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
             }
         }
     }
-
-
 
     void HandleSprinting()
     {
@@ -184,15 +192,29 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void HandleBlockSelection()
+    {
+        for (int i = 0; i < blockPrefabs.Length; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i)) // Check keys 1-7
+            {
+                selectedBlockIndex = i;
+                Debug.Log(string.Format("Selected Block: {0}", selectedBlockIndex));
+                UpdateBlockSelectionUI(); // Update the UI when a block is selected
+                break;
+            }
+        }
+    }
+
     void HandleBlockInteraction()
     {
-        RaycastHit hit; // Declare the RaycastHit variable outside the Raycast call
+        RaycastHit hit;
 
         // Raycast to detect blocks
         if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, interactionRange))
         {
             // For block deletion (left mouse click)
-            if (Input.GetMouseButtonDown(0)) // Left click to delete block
+            if (Input.GetMouseButtonDown(0))
             {
                 if (hit.collider != null)
                 {
@@ -202,21 +224,29 @@ public class PlayerController : MonoBehaviour
             }
 
             // For block placement (right mouse click)
-            if (Input.GetMouseButtonDown(1)) // Right click to place block
+            if (Input.GetMouseButtonDown(1))
             {
                 if (hit.collider != null)
                 {
-                    Vector3 placePosition = hit.point + hit.normal / 2f; // Position slightly offset to place on the surface
+                    Vector3 placePosition = hit.point + hit.normal / 2f;
                     placePosition = new Vector3(
                         Mathf.Round(placePosition.x),
                         Mathf.Round(placePosition.y),
                         Mathf.Round(placePosition.z)
                     );
 
-                    Instantiate(blockPrefab, placePosition, Quaternion.identity); // Place block at the calculated position
+                    Instantiate(blockPrefabs[selectedBlockIndex], placePosition, Quaternion.identity); // Place the selected block
                     interactionAudioSource.PlayOneShot(placeBlockSound); // Play place block sound
                 }
             }
+        }
+    }
+
+    void UpdateBlockSelectionUI()
+    {
+        if (blockSelectionImage != null && blockImages.Length > selectedBlockIndex)
+        {
+            blockSelectionImage.sprite = blockImages[selectedBlockIndex]; // Update the image sprite
         }
     }
 }
