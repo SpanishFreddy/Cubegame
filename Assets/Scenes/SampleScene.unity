@@ -355,7 +355,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkWidth: 64
   chunkLength: 64
-  chunkHeight: 16
+  chunkHeight: 12
   noiseScale: 10
   blockPrefab: {fileID: 1021373509311864, guid: d17f56dee9d79f948a157950a46a9d22,
     type: 2}
@@ -561,8 +561,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -321.05, y: 205.99}
-  m_SizeDelta: {x: 157.91, y: 37.88}
+  m_AnchoredPosition: {x: -301.09, y: 205.99}
+  m_SizeDelta: {x: 197.83, y: 37.88}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &869309823
 MonoBehaviour:
@@ -596,7 +596,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: CUBEGAME 0.0.1
+  m_Text: Cubegame Alpha 0.11
 --- !u!222 &869309824
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -648,8 +648,8 @@ MonoBehaviour:
   placeBlockSound: {fileID: 8300000, guid: 28d4057b2a51f9046a45084213077a05, type: 3}
   destroyBlockSound: {fileID: 8300000, guid: b378af72eb6c66349ac97869175c1a56, type: 3}
   backgroundMusic: {fileID: 8300000, guid: c02267c209b4ac84bb3f079f66d469ba, type: 3}
---- !u!136 &1258711063
-CapsuleCollider:
+--- !u!65 &1258711063
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
@@ -657,9 +657,8 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 2, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1258711064
 MeshRenderer:
